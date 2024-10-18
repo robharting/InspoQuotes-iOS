@@ -116,7 +116,7 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
                 
                 // added it ot failed part to be able to test locally with simulator
                 showPremiumQuotes()
-                UserDefaults.standard.set(true, forKey: productID)
+                
                 
                 if let error = transaction.error {
                     let errorDescription = error.localizedDescription
@@ -124,12 +124,24 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
                 }
                 
                 SKPaymentQueue.default().finishTransaction(transaction)
+            } else if transaction.transactionState == .restored {
+                showPremiumQuotes()
+                
+                print("Transaction restored")
+                
+                navigationItem.setRightBarButton(nil, animated: true)
+                
+                SKPaymentQueue.default().finishTransaction(transaction)
+                
             }
         }
         
     }
     
     func showPremiumQuotes() {
+        
+        UserDefaults.standard.set(true, forKey: productID)
+        
         // append premiumQuotes to array quotesToShow
         quotesToShow.append(contentsOf: premiumQuotes)
         tableView.reloadData()
@@ -149,7 +161,7 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
     
     
     @IBAction func restorePressed(_ sender: UIBarButtonItem) {
-        
+        SKPaymentQueue.default().restoreCompletedTransactions()
     }
     
     
