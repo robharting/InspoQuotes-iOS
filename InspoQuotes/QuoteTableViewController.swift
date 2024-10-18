@@ -39,13 +39,22 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         
         SKPaymentQueue.default().add(self)
         
+        if isPurchased() {
+            showPremiumQuotes()
+        }
+        
         
     }
     
     // MARK: - Table view data source
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return quotesToShow.count + 1
+        if isPurchased() {
+            return quotesToShow.count
+        } else {
+            return quotesToShow.count + 1
+        }
+        
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -54,14 +63,14 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         if indexPath.row < quotesToShow.count {
             cell.textLabel?.text =  quotesToShow[indexPath.row].description
             cell.textLabel?.numberOfLines = 0
+            cell.textLabel?.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+            cell.accessoryType = .none
         } else {
             cell.textLabel?.text = "Get More Quotes"
             cell.textLabel?.textColor = #colorLiteral(red: 0.4745098054, green: 0.8392156959, blue: 0.9764705896, alpha: 1)
             cell.accessoryType = .disclosureIndicator
         }
             
-        
-        
         return cell
     }
     
@@ -98,10 +107,16 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
                 
                 print("Transaction suc6")
                 
+               //showPremiumQuotes()
+                
                 SKPaymentQueue.default().finishTransaction(transaction)
                 
             } else if transaction.transactionState == .failed {
                 // Payment failed
+                
+                // added it ot failed part to be able to test locally with simulator
+                showPremiumQuotes()
+                UserDefaults.standard.set(true, forKey: productID)
                 
                 if let error = transaction.error {
                     let errorDescription = error.localizedDescription
@@ -112,6 +127,24 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
             }
         }
         
+    }
+    
+    func showPremiumQuotes() {
+        // append premiumQuotes to array quotesToShow
+        quotesToShow.append(contentsOf: premiumQuotes)
+        tableView.reloadData()
+        
+    }
+    
+    func isPurchased() -> Bool {
+        let purchaseStatuts = UserDefaults.standard.bool(forKey: productID)
+        if purchaseStatuts {
+            print("Previously purchased")
+            return true
+        } else {
+            print("Not Previously purchased")
+            return false
+        }
     }
     
     
